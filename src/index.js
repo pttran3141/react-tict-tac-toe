@@ -15,7 +15,9 @@ class Square extends React.Component {
     React component can have state by setting this.state in their constructor
     this.state should be considered as private to a React component that it's
     defined in. 
-    */
+    
+    Constructor won't be needed anymore since Square no longer keeps track of the game's state
+
     constructor(props) {
         // in JS classes, we need to always call super when defining the constructor
         // of a subclass. All React component classes that have a constructor should
@@ -27,6 +29,8 @@ class Square extends React.Component {
             value: null,
         };
     }
+    */
+
     /*
     The render method returns a description of what you want to see on the screen.
     React takes the description and displays the result
@@ -40,12 +44,12 @@ class Square extends React.Component {
                 // return setState with value X
                 // When call setState in a component, React automatically updates
                 // the child components inside of it too .
-                onClick={() => this.setState({ value: 'X' })}>
+                onClick={() => this.props.onClick()}>
                 {/*
                 “passed a prop” from a parent Board component to a child Square component. 
                  Passing props is how information flows in React apps, from parents to children.
                  */}
-                {this.state.value}
+                {this.props.value}
             </button>
         );
     }
@@ -60,6 +64,13 @@ class Board extends React.Component {
         this.state = {
             squares: Array(9).fill(null),
         };
+    }
+
+    handleClick(i) {
+        //we call .slice() to create a copy of the squares array to modify instead of modifying the existing array
+        const squares = this.state.squares.slice();
+        squares[i] = 'X';
+        this.setState({squares: squares});
     }
 
     renderSquare(i) {
