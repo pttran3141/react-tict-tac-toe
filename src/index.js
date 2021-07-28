@@ -2,75 +2,57 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
+// Square has been changed from class to function component
+// Square function component
 /*
-  Here Square is a React Component class or type
-  and the Square component renders a single <button>
- */
-class Square extends React.Component {
-    /*
-    We want Square component to "remember" that it got clicked
-    and fill it with an "X" mark, component use "state" to 
-    remember things
+    In React, function component are a simpler way to rwite components
+    that only contain a render method and don't have their own state
+    Instead of defining a class which extends React.Component, we can 
+    write a function that take props as input and returns what should
+    be rendered
+*/
 
-    React component can have state by setting this.state in their constructor
-    this.state should be considered as private to a React component that it's
-    defined in. 
-    
-    Constructor won't be needed anymore since Square no longer keeps track of the game's state
-
-    constructor(props) {
-        // in JS classes, we need to always call super when defining the constructor
-        // of a subclass. All React component classes that have a constructor should
-        // start with a super(props) call.
-        super(props);
-        // Cahnge the Square's render method to display the current state's
-        // when clicked
-        this.state = {
-            value: null,
-        };
-    }
-    */
-
-    /*
-    The render method returns a description of what you want to see on the screen.
-    React takes the description and displays the result
-    */
-    render() {
-        return (
-            /*<button className="square" onClick = {function() { alert('click'); } }>*/
-            <button
-                className="square"
-                // onClick we will call the anonymous function 
-                // return setState with value X
-                // When call setState in a component, React automatically updates
-                // the child components inside of it too .
-                onClick={() => this.props.onClick()}>
-                {/*
-                “passed a prop” from a parent Board component to a child Square component. 
-                 Passing props is how information flows in React apps, from parents to children.
-                 */}
-                {this.props.value}
-            </button>
-        );
-    }
+function Square(props) {
+    return (
+        <button className = "square" onClick = {props.onClick}>
+            {props.value}
+        </button>
+    );
 }
+
 /*
     Board Component renders 9 squares
 */
 class Board extends React.Component {
 
     constructor(props) {
+
         super(props);
+
         this.state = {
             squares: Array(9).fill(null),
+            x_is_next: true, // Keep track of X turns 
         };
     }
 
+    // handleClick function will also keep track handle the player's turn
     handleClick(i) {
         //we call .slice() to create a copy of the squares array to modify instead of modifying the existing array
         const squares = this.state.squares.slice();
-        squares[i] = 'X';
-        this.setState({squares: squares});
+
+        // Change the Board's handleClick function to return early
+        // by ignoring a click if someone has won the game
+        // or if a Square is already filled
+        if (calculateWinner(squares) || squares[i]){
+            return;
+        }
+
+        squares[i] = this.state.x_is_next ? 'X' : 'O'; // if this state is x turn then X else O
+
+        this.setState({
+            squares: squares,
+            x_is_next: !this.state.x_is_next,
+        });
     }
 
     renderSquare(i) {
@@ -97,7 +79,15 @@ class Board extends React.Component {
     }
 
     render() {
-        const status = 'Next player: X';
+        const winner = calculateWinner(this.state.squares);
+
+        let status;
+
+        if (winner){
+            status = 'Winner: ' + winner;
+        } else {
+            status = 'Next player: ' + (this.state.x_is_next ? 'X' : 'O');            
+        }
 
         return (
             <div>
@@ -147,3 +137,23 @@ ReactDOM.render(
     <Game />,
     document.getElementById('root')
 );
+
+function calculateWinner(squares) {
+    const lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6],
+    ];
+    for (let i = 0; i < lines.length; i++) {
+      const [a, b, c] = lines[i];
+      if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+        return squares[a];
+      }
+    }
+    return null;
+  }
